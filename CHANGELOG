@@ -1,7 +1,7 @@
 Version 1.2 work in progress
 -------------------------------
 
-Version 1.1 work
+Version 1.1
 -------------------------------
 - Полная поддержка AR relations
 - Добавлена возможность исключать группы свойств из результата, посредством DocBlockCommand::$propertyIteratorOptions - значения по умолчанию:
