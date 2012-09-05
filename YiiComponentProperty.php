@@ -2,108 +2,69 @@
 /**
  * Know all about CComponent, CModel, CActiveRecord and etc.
  */
-class YiiComponentProperty extends DocBlockLine
-{
-    public $tag = 'property';
+class YiiComponentProperty extends DocBlockLine  {
 
-    public $toWrite;
-    public $settable;
-    public $gettable;
+    public $readWriteDifferentiate = false; // not supported yet
 
-    public $readWriteDifferentiate = false;
+    protected $_readType;
+    protected $_writeType;
+    protected $_readComment;
+    protected $_writeComment;
 
+    protected $_settable;
+    protected $_gettable;
 
-    public function init()
+    protected $_oldWriteType;
+    protected $_oldWriteComment;
+    protected $_oldReadType;
+    protected $_oldReadComment;
+
+    public function afterPopulate()
     {
-        if ($this->readWriteDifferentiate)
-        {
-            $this->toWrite           = new YiiComponentProperty;
-            $this->toWrite->name     = $this->name;
-            $this->toWrite->iterator = $this->iterator;
-        }
+        $this->tag = 'property';
+        $this->comment = $this->_readComment;
+        $this->oldComment = $this->_oldReadComment;
+        $this->type = $this->_readType;
+        $this->oldType = $this->_oldReadType;
     }
-
-
-    public function getTagLen()
-    {
-        if ($this->getIsFullMode())
-        {
-            if ($this->settable && $this->gettable)
-            {
-                return strlen('property');
-            }
-            if ($this->settable)
-            {
-                return strlen('property-write');
-            }
-            if ($this->gettable)
-            {
-                return strlen('property-read');
-            }
-        }
-        else
-        {
-            return strlen('property');
-        }
-    }
-
 
     /**
      * @return string combined doc string
      */
     public function __toString()
     {
-        try
-        {
-            if ($this->getIsFullMode())
-            {
-                $docBlock = '';
-                if ($this->settable)
-                {
-                    $this->toWrite->tag = 'property-write';
-                    $docBlock .= $this->toWrite->getLine();
-                }
-                if ($this->gettable)
-                {
-                    $this->tag = 'property-read';
-                    $docBlock .= $this->getLine();
-                }
-                return $docBlock;
+        try {
+            if ($this->_settable || $this->_gettable) {
+                return $this->getLine($this->tag, $this->type, "\$".$this->name, $this->comment);
             }
-            else
-            {
-                $this->tag = 'property';
-                return $this->getLine();
-            }
-        } catch (Exception $e)
-        {
+            return '';
+        } catch (Exception $e) {
             Yii::app()->handleException($e);
         }
     }
 
+    public function getNameLen()
+    {
+        return strlen("\$".$this->name);
+    }
 
     /**
      * use or not
      *
      * @property-read/@property-write mode
-     *
      * @return bool
      */
     public function getIsFullMode()
     {
-        if (!$this->readWriteDifferentiate)
-        {
+        if (!$this->readWriteDifferentiate) {
             return false;
-        }
-        else
-        {
-            $fullAccess   = $this->settable && $this->gettable;
-            $sameType     = $this->toWrite->type == $this->type;
-            $sameDescribe = $this->toWrite->comment == $this->comment;
+        } else {
+            $fullAccess = $this->_settable && $this->_gettable;
+            $sameType = $this->_writeType == $this->_readType;
+            $sameDescribe = $this->_writeComment == $this->_readComment;
             return !$fullAccess || !$sameType || !$sameDescribe;
         }
     }
-
 
     /**
      * Fill himself by $object properties
@@ -112,43 +73,59 @@ class YiiComponentProperty extends DocBlockLine
      */
     public function populate($object)
     {
-        $this->settable = $this->settable || $this->isAccessor($object, 'set');
-        $this->gettable = $this->gettable || $this->isAccessor($object, 'get');
+        $this->_settable = $this->_settable || $this->isAccessor($object, 'set');
+        $this->_gettable = $this->_gettable || $this->isAccessor($object, 'get');
         $this->setTypeAndComment($object);
 
-        if (method_exists($object, 'behaviors'))
-        {
-            foreach ($object->behaviors() as $id => $data)
-            {
+        if (method_exists($object, 'behaviors')) {
+            foreach ($object->behaviors() as $id => $data) {
                 $this->populate($object->asa($id));
             }
         }
     }
 
+    public function getTagLen()
+    {
+        return strlen('property');
+//for full mode
+        if ($this->getIsFullMode()) {
+            if ($this->settable && $this->gettable) {
+                return strlen('property');
+            }
+            if ($this->settable) {
+                return strlen('property-write');
+            }
+            if ($this->gettable) {
+                return strlen('property-read');
+            }
+        } else {
+            return strlen('property');
+        }
+    }
 
     /**
      * Check property on accessability(existing setter|getter|public property|event)
      *
      * @param CComponent $object
      * @param            $type set|get
-     *
      * @return bool
      */
     public function isAccessor(CComponent $object, $type)
     {
         $accessor = property_exists($object, $this->name);
-        if (!$accessor && $object->{'can' . ucfirst($type) . 'Property'}($this->name))
-        {
-            $m        = new ReflectionMethod($object, $type . $this->name);
-            $accessor = $m->getNumberOfRequiredParameters() <= ($type == 'set' ? 1 : 0);
+        if (!$accessor && $object->{'can' . ucfirst($type) . 'Property'}($this->name)) {
+            $m = new ReflectionMethod($object, $type . $this->name);
+            if ($m->getNumberOfRequiredParameters() <= ($type == 'set' ? 1 : 0)) {
+                $accessor = true;
+            } else {
+                return false;
+            }
         }
-        if (!$accessor)
-        {
+        if (!$accessor) {
             $accessor = $object->hasEvent($this->name);
         }
-        if (!$accessor && $object instanceof CActiveRecord)
-        {
-            $rels     = $object->relations();
+        if (!$accessor && $object instanceof CActiveRecord) {
+            $rels = $object->relations();
             $accessor = isset($rels[$this->name]);
         }
         return $accessor;
@@ -162,50 +139,42 @@ class YiiComponentProperty extends DocBlockLine
      */
     public function setTypeAndComment(CComponent $object)
     {
-        if (property_exists($object, $this->name))
-        {
-            $data                   = DocBlockParser::parseProperty($object, $this->name)->var;
-            $this->toWrite->type    = $this->type = $data['type'];
-            $this->toWrite->comment = $this->comment = $data['comment'];
+        if (property_exists($object, $this->name)) {
+            $data = DocBlockParser::parseProperty($object, $this->name)->var;
+            $this->_readType = $this->_writeType = $data['type'];
+            $this->_readComment = $this->_writeComment = $data['comment'];
         }
-        if ($object->canSetProperty($this->name))
-        {
-            $data                   = DocBlockParser::parseMethod($object, 'set' . $this->name)->params;
-            $first                  = array_shift($data); //get first param of setter
-            $this->toWrite->type    = $first['type'];
-            $this->toWrite->comment = $first['comment'];
+        if ($object->canSetProperty($this->name)) {
+            $data = DocBlockParser::parseMethod($object, 'set' . $this->name)->params;
+            $first = array_shift($data); //get first param of setter
+            $this->_writeType = $first['type'];
+            $this->_writeComment = $first['comment'];
         }
-        if ($object->canGetProperty($this->name))
-        {
-            $data          = DocBlockParser::parseMethod($object, 'get' . $this->name)->return;
-            $this->type    = $data['type'];
-            $this->comment = $data['comment'];
+        if ($object->canGetProperty($this->name)) {
+            $data = DocBlockParser::parseMethod($object, 'get' . $this->name)->return;
+            $this->_readType = $data['type'];
+            $this->_readComment = $data['comment'];
         }
-        if ($object->hasEvent($this->name))
-        {
-            $parser                 = DocBlockParser::parseMethod($object, $this->name);
-            $this->toWrite->type    = $this->type = "CList";
-            $this->toWrite->comment = $this->comment = $parser->getShortDescription();
+        if ($object->hasEvent($this->name)) {
+            $parser = DocBlockParser::parseMethod($object, $this->name);
+            $this->_writeType = $this->_readType = "CList";
+            $this->_writeComment = $this->_readComment = $parser->getShortDescription();
         }
-        if ($object instanceof CActiveRecord)
-        {
+        if ($object instanceof CActiveRecord) {
             $rels = $object->relations();
-            if (isset($rels[$this->name]))
-            {
+            if (isset($rels[$this->name])) {
                 list ($relType, $type) = $rels[$this->name];
                 $returnArrayTypes = array(
                     CActiveRecord::HAS_MANY,
                     CActiveRecord::MANY_MANY
                 );
-                if (in_array($relType, $returnArrayTypes))
-                {
+                if (in_array($relType, $returnArrayTypes)) {
                     $type = $type . '[]';
                 }
-                if ($relType == CActiveRecord::STAT)
-                {
+                if ($relType == CActiveRecord::STAT) {
                     $type = 'int|null';
                 }
-                $this->toWrite->type = $this->type = $type;
+                $this->_writeType = $this->_readType = $type;
             }
         }
     }
@@ -213,24 +182,19 @@ class YiiComponentProperty extends DocBlockLine
 
     public function setOldValues($properties)
     {
-        if (isset($properties[$this->name]))
-        {
-            $this->oldType    = $properties[$this->name]['type'];
-            $this->oldComment = $properties[$this->name]['comment'];
-        }
-        else
-        {
+        if (isset($properties[$this->name])) {
+            $this->_oldReadType = $properties[$this->name]['type'];
+            $this->_oldReadComment = $properties[$this->name]['comment'];
+        } else {
             $key = $this->name . '-write';
-            if (isset($properties[$key]))
-            {
-                $this->toWrite->oldType    = $properties[$key]['type'];
-                $this->toWrite->oldComment = $properties[$key]['comment'];
+            if (isset($properties[$key])) {
+                $this->_oldWriteType = $properties[$key]['type'];
+                $this->_oldWriteComment = $properties[$key]['comment'];
             }
             $key = $this->name . '-read';
-            if (isset($properties[$key]))
-            {
-                $this->oldType    = $properties[$key]['type'];
-                $this->oldComment = $properties[$key]['comment'];
+            if (isset($properties[$key])) {
+                $this->_oldReadType = $properties[$key]['type'];
+                $this->_oldReadComment = $properties[$key]['comment'];
             }
         }
     }

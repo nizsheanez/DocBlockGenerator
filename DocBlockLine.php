@@ -2,9 +2,7 @@
 /**
  * Incapsulate property drawing logic
  */
-abstract class DocBlockLine extends CComponent
-{
-    protected $tag;
+abstract class DocBlockLine extends CComponent {
 
     public $name;
     public $iterator;
@@ -14,84 +12,46 @@ abstract class DocBlockLine extends CComponent
     public $typeVerticalAlignment = true;
     public $propertyVerticalAlignment = true;
 
+    public $tag;
 
     public $type;
     public $comment;
 
-
     public $oldType;
     public $oldComment;
 
-
-    public function init()
-    {
-
-    }
-
-
-    public function getTag()
-    {
-        return $this->tag;
-    }
-
-    public function setTag($val)
-    {
-        return $this->tag = $val;
-    }
-
-
-
     /**
-     * @return string combined doc string
+     * Get _property or him _oldProperty variant
+     *
+     * @param string $name
+     * @return mixed
      */
-    public function __toString()
+    public function __get($name)
     {
-        try
-        {
-            return $this->getLine();
-        } catch (Exception $e)
-        {
-            Yii::app()->handleException($e);
-        }
+        return $this->{'_' . $name} ? $this->{'_' . $name} : $this->{'_old' . ucfirst($name)};
     }
 
 
-    protected function getLine()
+    protected function getLine($tag, $type, $property, $comment)
     {
-        $tag     = $this->tag;
-        $comment = $this->comment;
-        $type    = $this->type;
-
-        $property = $this->toUndercore ? $this->camelCaseToUnderscore($this->name) : $this->name;
+        $property = $this->toUndercore ? $this->camelCaseToUnderscore($property) : $property;
         $this->align($tag, $type, $property);
-        return "@$tag $type \$$property $comment\n";
+
+        return "@$tag $type $property $comment\n";
     }
 
 
     public function align(&$tag, &$type, &$property)
     {
-        if ($this->tagVerticalAlignment)
-        {
+        if ($this->tagVerticalAlignment) {
             $tag = $tag . str_repeat(' ', $this->iterator->getMaxLenOfTag() - strlen($tag));
         }
-        if ($this->typeVerticalAlignment)
-        {
+        if ($this->typeVerticalAlignment) {
             $type = $type . str_repeat(' ', $this->iterator->getMaxLenOfType() - strlen($type));
         }
-        if ($this->propertyVerticalAlignment)
-        {
-            $property =
-                $property . str_repeat(' ', $this->iterator->getMaxLenOfProperty() - strlen($property));
-        }
-    }
-
-
-    public function setOldValues($properties)
-    {
-        if (isset($properties[$this->name]))
-        {
-            $this->oldType    = $properties[$this->name]['type'];
-            $this->oldComment = $properties[$this->name]['comment'];
+        if ($this->propertyVerticalAlignment) {
+            $property
+                = $property . str_repeat(' ', $this->iterator->getMaxLenOfName() - strlen($property));
         }
     }
 
@@ -103,12 +63,23 @@ abstract class DocBlockLine extends CComponent
      */
     abstract public function populate($object);
 
+    abstract public function afterPopulate();
+
+    abstract public function getTagLen();
+
+
+    public function setOldValues($properties)
+    {
+        if (isset($properties[$this->name])) {
+            $this->oldType = $properties[$this->name]['type'];
+            $this->oldComment = $properties[$this->name]['comment'];
+        }
+    }
 
     /**
      * Proxy method for external component
      *
      * @param string $str
-     *
      * @return string
      */
     protected function camelCaseToUnderscore($str)
