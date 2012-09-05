@@ -1,10 +1,12 @@
 Version 1.2 work in progress
 -------------------------------
+- #3 add scopes support
+
 
 Version 1.1
 -------------------------------
-- Полная поддержка AR relations
-- Добавлена возможность исключать группы свойств из результата, посредством DocBlockCommand::$propertyIteratorOptions - значения по умолчанию:
+- #1 Полная поддержка AR relations
+- #2 Добавлена возможность исключать группы свойств из результата, посредством DocBlockCommand::$propertyIteratorOptions - значения по умолчанию:
     'includeAttributes' => true,
     'includeEvents'     => false,
     'includeAccessors'  => true,
