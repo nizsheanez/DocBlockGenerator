@@ -82,7 +82,6 @@ class DocBlockCommand extends CConsoleCommand
             }
             list($class, $object) = $data;
             $docBlock    = $this->getDockBlock($class, $object);
-//            dump($docBlock);
             $file        = $fileInfo->getPath() . '/' . $fileInfo->getFileName();
             $content     = file_get_contents($file);
             $fileContent = substr($content, strpos($content, "class $class"));
