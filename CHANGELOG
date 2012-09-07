@@ -1,6 +1,10 @@
-Version 1.2 work in progress
+Version 1.3 work in progress
+-------------------------------
+
+Version 1.2
 -------------------------------
 - #3 add scopes support
+- #5 non AR behaviors method support
 
 
 Version 1.1 work
