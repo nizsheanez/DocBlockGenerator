@@ -10,11 +10,16 @@ return array(
         'commentLanguage'         => 'ru',
         'commentCategory'         => 'core',
         'addIllustrationCommetns' => true,
-        'includeAttributes'       => true,
-        'includeEvents'           => false,
-        'includeAccessors'        => true,
-        'includeRelations'        => true,
-
+        //allow values: 'attributes', 'events', 'accessors', 'relations'
+        'generatePropertiesFor'   => array(
+            'attributes',
+            'accessors',
+            'relations'
+        ),
+        //allow values: 'scopes'
+        'generateMethodsFor'      => array(
+            'scopes'
+        ),
         //some settings for @property annotation
         'propertyOptions'         => array(
             'class'                     => 'YiiComponentProperty',
