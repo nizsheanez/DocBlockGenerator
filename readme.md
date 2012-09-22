@@ -1,6 +1,51 @@
 Генератор DocBlock для Yii. Добавляет поддержку автодополнения для
 публичных геттеров, сеттеров, событий, скоупов, релейшенов, поведений, атрибутов моделей AR
 
+#Пример результата
+
+~~~
+[php]
+/**
+ *
+ * !Attributes - атрибуты БД
+ * @property string           $language
+ * @property string           $status
+ * @property integer          $comments_denied
+ * @property string           $id
+ * @property string           $user_id
+ * @property string           $title
+ * @property string           $url
+ * @property string           $text
+ * @property string           $date_create
+ * @property integer          $order
+ *
+ * !Accessors - Геттеры и сеттеры класа и его поведений
+ * @property                  $href
+ * @property                  $content
+ * @property                  $errorsFlatArray
+ * @property                  $updateUrl
+ * @property                  $createUrl
+ * @property                  $deleteUrl
+ *
+ * !Relations - связи
+ * @property Language         $language_model
+ * @property TagRel[]         $tags_rels
+ * @property Tag[]            $tags
+ * @property int|null         $comments_count
+ * @property User             $user
+ * @property PageSectionRel[] $sections_rels
+ * @property PageSection[]    $sections
+ *
+ * !Scopes - именованные группы условий, возвращают этот АР
+ * @method   Page             published()
+ * @method   Page             sitemap()
+ * @method   Page             ordered()
+ * @method   Page             last()
+ *
+ */
+
+~~~
+
 #Использование
 
 1) Конфигурируется, как и любая консольная комманда Yii, однако сначала применяется базовая конфигурация:
