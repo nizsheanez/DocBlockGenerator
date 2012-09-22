@@ -26,8 +26,7 @@
 типа или комментария, то будет использована она, так что редактировать сгенерированные типы или
 комментарии бесполезно - нужно редактировать источник информации, например комментарии к геттеру.
 - Аннотации
-`author|api|category|deprecated|example|filesource|ignore|internal|
-license|link|package|see|since|subpackage|todo|version|uses|used-by`
+`author|api|category|deprecated|example|filesource|ignore|internal|license`,`link|package|see|since|subpackage|todo|version|uses|used-by`
 будут сохранены(думаю этой простыни вам хватит)
 - Преобразование стилей кодирования camelCaseToUnderscore (по умолчанию выключено, т.к. требует внешнего преобразователя)
 - Ну и приятный бонус: вертикальное выравнивание (можно выключить)
