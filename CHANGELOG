@@ -1,5 +1,21 @@
-Version 1.4 work in progress
+Version 1.7 work in progress
 -------------------------------
+
+Version 1.6
+-------------------------------
+#11 - Add Using instruction to Readme enhance
+#17 - Check on instantiatable
+
+Version 1.5
+-------------------------------
+#12 - Experiment on simple components, Experiment on simple php class
+#13 - Check mysql metadata for generate attribute type,
+
+Version 1.4
+-------------------------------
+#7 - Incapsulate configurations to config file
+#9 - No add comments if no elements
+#10 - Filtering before instantiate property
 
 Version 1.3
 -------------------------------
